@@ -1,0 +1,75 @@
+project:
+  name: "Adaptive Compression: Intelligent Frame Compression for Memory Optimization"
+  worklet_id: "26VI11"
+  department: "CSED"
+  program: "Samsung PRISM"
+  milestone: 1
+
+paths:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  metadata_dir: "data/metadata"
+  results_dir: "results"
+  figures_dir: "results/figures"
+  experiments_dir: "experiments"
+
+dataset:
+  name: "kodak_and_edge_cases"
+  train_ratio: 0.60
+  val_ratio: 0.20
+  test_ratio: 0.20
+  random_seed: 42
+
+preprocessing:
+  target_color_space: "RGB"
+  compute_yuv: true
+  yuv_standard: "BT601"
+  max_image_dim: 1024
+
+compression:
+  lossless_codecs:
+    - "png"
+    - "webp_lossless"
+  lossy_codecs:
+    - "jpeg"
+    - "webp_lossy"
+  lossy_quality_levels:
+    - 50
+    - 75
+    - 85
+    - 95
+  default_lossless_codec: "png"
+  default_lossy_codec: "jpeg"
+  default_lossy_quality: 85
+
+labeling:
+  # =========================================================================
+  # EXPERIMENTAL PARAMETERS — ASSUMPTIONS — REQUIRE MENTOR CONFIRMATION
+  # =========================================================================
+  # An image is labeled LOSSY if it simultaneously satisfies:
+  # 1. ssim >= ssim_threshold (default 0.94)
+  # 2. psnr >= psnr_threshold (default 33.0 dB)
+  # 3. size_saving_ratio >= min_size_saving (default 0.25 over lossless)
+  # 4. dark_ssim >= dark_ssim_threshold (default 0.90)
+  # Otherwise: LOSSLESS
+  # =========================================================================
+  ssim_threshold: 0.94
+  psnr_threshold: 33.0
+  min_size_saving: 0.25
+  dark_ssim_threshold: 0.90
+  dark_pixel_cutoff: 40
+
+features:
+  local_variance_patch_size: 8
+  sobel_edge_threshold: 30.0
+  dark_pixel_cutoff: 40
+  bright_pixel_cutoff: 215
+
+models:
+  random_seed: 42
+  baselines:
+    - "majority"
+    - "rule_based"
+    - "logistic_regression"
+    - "decision_tree"
+    - "random_forest"

@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Data and Artifacts (avoid committing raw datasets)
+data/raw/*.png
+data/raw/*.jpg
+data/raw/*.bmp
+data/processed/*.png
+data/processed/*.npy
+!data/raw/README.md
+
+# Cache & Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
