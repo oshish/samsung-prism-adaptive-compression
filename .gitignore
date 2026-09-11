@@ -27,6 +27,7 @@ venv/
 ENV/
 
 # Data and Artifacts (avoid committing raw datasets)
+data/cache/
 data/raw/*.png
 data/raw/*.jpg
 data/raw/*.bmp

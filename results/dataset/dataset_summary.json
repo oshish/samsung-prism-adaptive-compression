@@ -1,0 +1,25 @@
+{
+  "total_images": 1030,
+  "total_features": 40,
+  "duplicate_ids": 0,
+  "total_missing": 0,
+  "total_nans": 0,
+  "total_infs": 0,
+  "constant_features": [],
+  "low_variance_features": [],
+  "high_corr_pair_count": 26,
+  "cleaning_summary": {
+    "total_raw_scanned": 1046,
+    "status_counts": {
+      "VALID": 1030,
+      "VISUAL_DUPLICATE": 12,
+      "DUPLICATE": 4
+    },
+    "action_counts": {
+      "KEPT_UNCHANGED": 964,
+      "CONVERTED_FROM_GRAYSCALE": 66,
+      "SKIPPED": 16
+    },
+    "grayscale_count": 71
+  }
+}

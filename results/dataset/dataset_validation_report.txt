@@ -1,0 +1,55 @@
+======================================================================
+SAMSUNG PRISM ADAPTIVE FRAME COMPRESSION: DATASET VALIDATION REPORT
+======================================================================
+
+Total Master Feature Rows: 1030
+Total Feature Columns:    42 (2 metadata, 40 numerical)
+Duplicate Image IDs:      0
+Duplicate Entire Rows:    0
+Total Missing / Null:     0
+Total NaN Values:         0
+Total Infinite Values:    0
+
+--------------------------------------------------
+DATASET CLEANING AUDIT
+--------------------------------------------------
+  total_raw_scanned: 1046
+  status_counts: {'VALID': 1030, 'VISUAL_DUPLICATE': 12, 'DUPLICATE': 4}
+  action_counts: {'KEPT_UNCHANGED': 964, 'CONVERTED_FROM_GRAYSCALE': 66, 'SKIPPED': 16}
+  grayscale_count: 71
+
+--------------------------------------------------
+FEATURE VARIANCE AUDIT
+--------------------------------------------------
+Constant Features (zero variance): None
+Near-Zero Variance Features (< 1e-4): None
+
+--------------------------------------------------
+STRONGLY CORRELATED FEATURE PAIRS (|r| >= 0.85)
+--------------------------------------------------
+  shannon_entropy           <-> shannon_entropy_y         : r = +1.0000
+  mean_luminance            <-> mean_g                    : r = +0.9916
+  min_luminance             <-> michelson_contrast        : r = -0.9867
+  laplacian_variance        <-> glcm_contrast             : r = +0.9823
+  std_luminance             <-> std_g                     : r = +0.9774
+  mean_luminance            <-> median_luminance          : r = +0.9639
+  median_luminance          <-> mean_g                    : r = +0.9563
+  mean_luminance            <-> mean_r                    : r = +0.9500
+  std_edge_magnitude        <-> local_variance_std        : r = +0.9343
+  mean_luminance            <-> mean_b                    : r = +0.9257
+  mean_g                    <-> mean_b                    : r = +0.9253
+  std_v                     <-> colorfulness              : r = +0.9215
+  std_edge_magnitude        <-> local_variance_mean       : r = +0.9191
+  median_luminance          <-> mean_r                    : r = +0.9126
+  mean_r                    <-> mean_g                    : r = +0.9066
+  median_luminance          <-> mean_b                    : r = +0.8981
+  sobel_edge_density        <-> glcm_homogeneity          : r = -0.8942
+  local_variance_mean       <-> glcm_contrast             : r = +0.8852
+  laplacian_variance        <-> noise_estimate            : r = +0.8839
+  dark_pixel_ratio          <-> rms_contrast              : r = +0.8824
+  std_g                     <-> std_b                     : r = +0.8737
+  width                     <-> total_pixels              : r = +0.8721
+  glcm_contrast             <-> noise_estimate            : r = +0.8705
+  std_luminance             <-> std_r                     : r = +0.8655
+  std_luminance             <-> std_b                     : r = +0.8597
+  local_variance_mean       <-> local_variance_std        : r = +0.8516

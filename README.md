@@ -1,166 +1,153 @@
-# Adaptive Compression: Intelligent Frame Compression for Memory Optimization
+# Adaptive Frame Compression: Intelligent Frame Compression for Memory Optimization
+
 **Samsung PRISM Student Project**  
-**Worklet ID**: 26VI11 | **Department**: CSED  
-**Milestone Scope**: Milestone 1 (Foundation & Baseline Implementation)
+**Worklet ID:** 26VI11  
+**Department:** Computer Science & Engineering (CSED)  
+**Team:** 3 Student Researchers  
 
 ---
 
-## 1. Project Motivation & Objective
-High-resolution imaging in mobile devices (smartphones, cameras, wearables, and smart displays) creates severe memory bandwidth bottlenecks. Transmitting uncompressed 24-bit RGB frame buffers between camera ISPs, GPUs, and LPDDR memory consumes massive bandwidth and battery power.
-
-While lossless compression (e.g. PNG, WebP Lossless) guarantees zero degradation, its compression ratio is modest ($1.5\times$ to $2.5\times$). Lossy compression (e.g. JPEG, WebP Lossy) achieves dramatic memory savings ($5\times$ to $20\times$), but risks introducing objectionable artifacts—particularly in dark regions (shadow blocking), smooth gradients (color banding), and fine textures.
-
-**Core Objective**: Build an intelligent, pre-compression decision system that analyzes incoming uncompressed RGB/YUV image frames and determines the optimal compression domain:
-$$\text{LOSSY} \quad \text{or} \quad \text{LOSSLESS}$$
-$$\max \text{Memory Savings} \quad \text{subject to} \quad \text{Visual Quality} \ge \text{Acceptable Constraint}$$
+> [!IMPORTANT]
+> **Milestone Status — Steps 1–6 Complete:**  
+> **This repository currently implements the dataset and feature extraction stage (Steps 1–6). Compression classification and machine learning models are not yet implemented.**  
+> The current deliverable is a verified, diverse ~1,000-image dataset, standardized RGB/YUV representations, modular pre-compression feature extraction, master CSV, comprehensive validation reports, and tests.
 
 ---
 
-## 2. Milestone 1 Architecture
+## 1. Project Overview
 
-```
-                       ┌───────────────────────────────┐
-                       │    Raw Uncompressed Frame     │
-                       │    (RGB / YUV BT.601/709)     │
-                       └──────────────┬────────────────┘
-                                      │
-                                      ▼
-                       ┌───────────────────────────────┐
-                       │ Pre-Compression Features      │
-                       │ • Luminance & Brightness      │
-                       │ • Local Variance & GLCM       │
-                       │ • Sobel & Laplacian Edges     │
-                       │ • Immerkaer Noise Estimate    │
-                       │ • Shannon & Color Entropy     │
-                       └──────────────┬────────────────┘
-                                      │
-                                      ▼
-                       ┌───────────────────────────────┐
-                       │   Intelligent Decision ML     │
-                       │ • Random Forest / LogReg      │
-                       │ • Rule-Based Heuristic        │
-                       └──────────────┬────────────────┘
-                                     / \
-                                    /   \
-                     Decision: LOSSY     Decision: LOSSLESS
-                                  /       \
-                                 ▼         ▼
-                         ┌────────────┐   ┌────────────┐
-                         │   Lossy    │   │  Lossless  │
-                         │   Codec    │   │   Codec    │
-                         └─────┬──────┘   └─────┬──────┘
-                                \              /
-                                 ▼            ▼
-                       ┌───────────────────────────────┐
-                       │   Memory Footprint & Quality  │
-                       │   (PSNR, SSIM, Dark-SSIM)     │
-                       └───────────────────────────────┘
-```
+Modern mobile display and camera pipelines process high-resolution frames under strict memory bandwidth, thermal, and battery constraints. The overarching objective of this Samsung PRISM project is to build an intelligent, low-latency framework that evaluates incoming raw uncompressed frames and determines the optimal compression strategy:
+- **LOSSY Compression:** High size reduction with acceptable perceptual quality (e.g. for high-noise or natural texture scenes).
+- **LOSSLESS Compression:** Perfect pixel reconstruction (e.g. for synthetic UI graphics, text, or high-contrast edge regions vulnerable to ringing/banding artifacts).
+
+This milestone establishes the scientific foundation:
+$$\text{Raw Image} \longrightarrow \text{Clean Dataset} \longrightarrow \text{RGB / YUV} \longrightarrow \text{Feature Extraction} \longrightarrow \text{Master CSV}$$
 
 ---
 
-## 3. Team Responsibilities (Team of 3 Students)
-
-| Student | Role & Domain | Primary Responsibilities |
-| :--- | :--- | :--- |
-| **Person A** | **ML/DL & Feature Engineering** | Pre-compression feature extractors (`src/features/`), statistical analysis, baseline ML models (Logistic Regression, Decision Tree, Random Forest), feature importance evaluation. |
-| **Person B** | **Image Processing & Compression Quality** | Preprocessing (`src/preprocessing/`), RGB ↔ YUV (BT.601/BT.709) color transforms, lossless & lossy codecs (`src/compression/`), PSNR, SSIM, dark-region artifact analysis, banding detection. |
-| **Person C** | **Dataset, Pipeline, Integration & Deployment** | Benchmark dataset curation (Kodak + Edge-case suite), leakage-safe train/val/test splitting, ground-truth label generation (`src/dataset/`), CLI runner (`scripts/`), unit tests, and system-level evaluation. |
-
----
-
-## 4. Repository Structure
+## 2. Repository Structure
 
 ```
 adaptive-compression/
-├── README.md                           # Project documentation and quickstart
-├── requirements.txt                    # Exact pinned dependencies
-├── configs/
-│   └── config.yaml                     # Centralized experiment parameters
+├── README.md                           # Project documentation and reproduction guide
+├── requirements.txt                    # Project dependencies
+├── .gitignore                          # Git ignore configuration
+│
 ├── data/
-│   ├── raw/                            # 30 benchmark frames (Kodak + Stress suite)
-│   └── metadata/                       # Manifests, splits, features, and labels
+│   ├── raw/                            # Preserved raw images (~1,040 images)
+│   ├── processed/                      # Cleaned, standardized 3-channel RGB PNG frames
+│   └── metadata/
+│       ├── dataset_raw_manifest.csv    # Manifest of acquired raw images
+│       ├── cleaning_log.csv            # Audit trail of all cleaning/deduplication actions
+│       └── image_features.csv          # MASTER CSV: 32 pre-compression features per frame
+│
 ├── src/
-│   ├── preprocessing/                  # Validation and RGB ↔ YUV transforms
-│   ├── features/                       # Pre-compression feature extraction
-│   ├── compression/                    # Lossless and lossy codec wrappers
-│   ├── evaluation/                     # PSNR, SSIM, and artifact metrics
-│   ├── dataset/                        # Benchmark builder and labeler
-│   ├── models/                         # Baseline classifiers and ML wrappers
-│   └── utils/                          # Logger and visualizer
+│   ├── data/
+│   │   ├── downloader.py               # Reproducible multi-source dataset acquisition
+│   │   └── cleaner.py                  # Integrity, duplicate detection (SHA-256/dHash), standardization
+│   ├── preprocessing/
+│   │   ├── image_loader.py             # Safe image loading and shape validation
+│   │   └── color_space.py              # Compatibility re-export
+│   ├── color/
+│   │   └── color_space.py              # ITU-R BT.601 RGB <-> YUV color conversion
+│   ├── features/
+│   │   ├── brightness.py               # Luminance mean/std, dark/bright ratios
+│   │   ├── contrast.py                 # Dynamic range, RMS contrast, Michelson contrast
+│   │   ├── histogram.py                # Percentiles (p10, p90, IQR) & Shannon entropy
+│   │   ├── edges.py                    # Sobel gradient, edge density, Laplacian variance
+│   │   ├── texture.py                  # 8x8 block local variance & GLCM Haralick features
+│   │   ├── noise.py                    # Immerkaer Laplacian noise proxy & dark chroma noise
+│   │   ├── color.py                    # RGB/YUV channel moments & Hasler-Süsstrunk colorfulness
+│   │   └── extractor.py                # Unified modular extract_features() interface
+│   └── utils/
+│       └── logger.py                   # Structured console/file logging
+│
 ├── scripts/
-│   ├── 01_prepare_dataset.py           # Ingests benchmark and generates splits
-│   ├── 02_run_compression_benchmark.py # Evaluates 300 rate-distortion trials
-│   ├── 03_extract_features.py          # Builds feature table
-│   ├── 04_generate_labels.py           # Generates empirical ground-truth labels
-│   ├── 05_train_baselines.py           # Trains all 5 baseline models
-│   ├── 06_evaluate_system.py           # Quantifies net memory and quality impact
-│   └── run_pipeline.py                 # One-click end-to-end runner
+│   ├── download_dataset.py             # Step 1: Download & stage raw images
+│   ├── prepare_dataset.py              # Steps 2 & 3: Clean, deduplicate, and standardize images
+│   ├── extract_features.py             # Steps 4 & 5: Run modular feature extraction to master CSV
+│   └── validate_dataset.py             # Step 6: Automated sanity analysis, report & figures
+│
 ├── results/
-│   ├── baseline/                       # Model metrics and predictions
-│   ├── figures/                        # Generated charts and diagrams
-│   └── system_evaluation.json          # Net system performance report
-├── tests/                              # Comprehensive pytest suite (18 tests)
+│   ├── dataset/
+│   │   ├── dataset_validation_report.txt # Full cleaning and dataset integrity report
+│   │   └── dataset_summary.json        # Machine-readable summary statistics
+│   └── features/
+│       ├── feature_summary_stats.csv   # Mean, std, median, skew, kurtosis per feature
+│       ├── feature_distributions.png   # Multi-panel histogram distributions
+│       └── correlation_matrix.png      # Feature correlation heatmap
+│
+├── tests/
+│   ├── test_pipeline_steps.py          # Unit & edge case tests for Steps 1–6
+│   ├── test_features.py                # Feature extraction unit tests
+│   ├── test_preprocessing.py           # Image loading and color space tests
+│   └── test_leakage.py                 # Strict target leakage blacklist audit
+│
 └── docs/
-    ├── PROJECT_PLAN.md                 # Detailed milestone roadmap
-    ├── ASSUMPTIONS.md                  # All assumptions with mentor review status
-    ├── MENTOR_QUESTIONS.md             # Prioritized questions for mentor meeting
-    ├── MILESTONE_1_REPORT.md           # Formal Milestone 1 technical report
-    └── learning/                       # 10 reverse-learning guides for students
+    ├── DATASET.md                      # Dataset sources, diversity, cleaning & reproducibility
+    ├── FEATURE_DEFINITIONS.md          # Comprehensive feature dictionary & formulae
+    ├── DATA_LEAKAGE.md                 # Pre-compression purity & target leakage prevention
+    └── ASSUMPTIONS.md                  # Structured log of non-obvious engineering assumptions
 ```
 
 ---
 
-## 5. Quickstart & How to Run
+## 3. Step-by-Step Reproduction Guide
 
 ### Environment Setup
 ```bash
-# 1. Create and activate virtual environment
-uv venv .venv
+# Clone the repository
+cd adaptive-compression
+
+# Create virtual environment and install dependencies
+python3 -m venv .venv
 source .venv/bin/activate
-
-# 2. Install dependencies
-uv pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-### Run Full Pipeline
+### Execution Pipeline (Steps 1–6)
 ```bash
-# Runs all 6 steps sequentially from raw data to system evaluation
-python scripts/run_pipeline.py --config configs/config.yaml
+# Step 1: Download ~1,000 diverse images from Caltech-101, Kodak, and Stress Suites
+python scripts/download_dataset.py
+
+# Steps 2 & 3: Clean, detect duplicates, and standardize to data/processed/
+python scripts/prepare_dataset.py
+
+# Steps 4 & 5: Extract 32 pre-compression features into data/metadata/image_features.csv
+python scripts/extract_features.py
+
+# Step 6: Validate dataset quality, generate statistics, and plot distributions
+python scripts/validate_dataset.py
 ```
 
-### Run Unit Tests
+### Run Test Suite
 ```bash
 pytest tests/ -v
 ```
 
 ---
 
-## 6. Key Scientific Principles
+## 4. Feature Summary (32 Attributes)
 
-### Empirical Ground-Truth Labeling
-We do **not** assume an arbitrary rule like "bright $\to$ lossy". Instead, labels are generated empirically:
-1. Every image is compressed losslessly (PNG) to establish $S_{\text{lossless}}$.
-2. Every image is compressed with lossy codec (JPEG Q=75) to measure $S_{\text{lossy}}$, $\text{SSIM}$, $\text{PSNR}$, and $\text{Dark-SSIM}$.
-3. An image is labeled **LOSSY** if and only if:
-   - Visual quality satisfies: $\text{SSIM} \ge 0.95$ and $\text{PSNR} \ge 34.0\text{ dB}$
-   - Size reduction is worthwhile: $\frac{S_{\text{lossless}} - S_{\text{lossy}}}{S_{\text{lossless}}} \ge 25\%$
-   - Dark-region distortion is safe: $\text{Dark-SSIM} \ge 0.92$
-4. Otherwise, it is labeled **LOSSLESS**.
+All features are extracted strictly from the uncompressed image before compression:
 
-*(All thresholds are configurable in `configs/config.yaml` and tracked under `ASSUMPTION — REQUIRES MENTOR CONFIRMATION`)*.
-
-### Zero Target Leakage
-Every feature passed to our classifiers is computed strictly on the uncompressed input frame prior to compression. Features like post-compression file size, compression ratio, and quality scores are blacklisted and verified by automated tests (`tests/test_leakage.py`).
+1. **Structural Metadata (4):** `width`, `height`, `aspect_ratio`, `total_pixels`
+2. **Luminance & Brightness (7):** `mean_luminance`, `std_luminance`, `min_luminance`, `max_luminance`, `median_luminance`, `dark_pixel_ratio` ($Y < 40$), `bright_pixel_ratio` ($Y > 215$)
+3. **Contrast & Dynamic Range (3):** `luminance_range`, `rms_contrast`, `michelson_contrast`
+4. **Histogram & Information (4):** `p10_luminance`, `p90_luminance`, `iqr_luminance`, `shannon_entropy` ($H(Y)$ in bits/pixel)
+5. **Edges & Sharpness (4):** `sobel_edge_density`, `mean_edge_magnitude`, `std_edge_magnitude`, `laplacian_variance`
+6. **Texture & Spatial Activity (4):** `local_variance_mean` (8x8 blocks), `local_variance_std`, `glcm_contrast`, `glcm_homogeneity`
+7. **Noise Proxies (2):** `noise_estimate` (Immerkaer filter), `dark_chroma_variance` (low-light chroma noise)
+8. **Color Moments & Vibrancy (7):** `mean_r`, `mean_g`, `mean_b`, `std_r`, `std_g`, `std_b`, `mean_u`, `mean_v`, `std_u`, `std_v`, `colorfulness` (Hasler-Süsstrunk)
 
 ---
 
-## 7. Limitations & Milestone 2 Roadmap
-* **Milestone 1 Limitations**:
-  - Binary decision formulation (Lossy vs Lossless).
-  - Software codecs (JPEG/WebP) used as proxies for hardware frame buffers.
-  - Small, high-quality benchmark set (30 frames).
-* **Recommended Milestone 2 Scope**:
-  - Expand to multi-level adaptive compression (e.g. Lossless, High-Quality Lossy, Aggressive Lossy).
-  - Benchmark lightweight Deep Learning / MobileNet backbones against our tabular feature baselines.
-  - Test on high-resolution camera burst datasets and mobile UI screenshot sequences.
+## 5. Zero Target Leakage Guarantee
+
+As detailed in [`docs/DATA_LEAKAGE.md`](docs/DATA_LEAKAGE.md), the master feature dataset contains **strictly zero target leakage**:
+- No compressed file sizes or compression ratios
+- No rate-distortion metrics (PSNR, SSIM, LPIPS)
+- No `LOSSY` or `LOSSLESS` ground-truth labels
+- No codec execution runtimes
+
+This guarantees that future machine learning models trained on this data will be valid for real-time inference prior to frame compression.
