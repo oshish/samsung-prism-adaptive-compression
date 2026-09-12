@@ -27,7 +27,13 @@ def main(config_path: str = "configs/config.yaml"):
     
     preds_path = os.path.join(results_dir, "baseline", "test_predictions.json")
     with open(preds_path, "r") as f:
-        test_preds = json.load(f)
+        preds_data = json.load(f)
+        
+    if "test_image_ids" in preds_data:
+        assert test_df["image_id"].tolist() == preds_data["test_image_ids"], "Image ID alignment mismatch between labels and predictions!"
+        test_preds = preds_data["predictions"]
+    else:
+        test_preds = preds_data
         
     # Add Oracle Ground Truth strategy
     test_preds["oracle_ground_truth"] = test_df["is_lossy_binary"].values.tolist()

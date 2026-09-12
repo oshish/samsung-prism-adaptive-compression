@@ -139,35 +139,52 @@ def prepare_benchmark_dataset(raw_dir: str) -> List[str]:
 def create_datasplits(
     image_paths: List[str],
     metadata_dir: str,
-    train_ratio: float = 0.60,
-    val_ratio: float = 0.20,
-    test_ratio: float = 0.20,
+    train_ratio: float = 0.70,
+    val_ratio: float = 0.15,
+    test_ratio: float = 0.15,
     random_seed: int = 42
 ) -> pd.DataFrame:
     """
-    Creates leakage-safe train/val/test splits strictly partitioned by image_id.
+    Creates leakage-safe train/val/test splits strictly partitioned by image_id,
+    with category-aware stratified allocation.
     """
     os.makedirs(metadata_dir, exist_ok=True)
     rng = np.random.default_rng(random_seed)
     
-    # Separate edge cases and kodak to distribute evenly
-    kodak_files = [p for p in image_paths if "kodim" in os.path.basename(p)]
-    edge_files = [p for p in image_paths if "edge_" in os.path.basename(p)]
-    
-    rng.shuffle(kodak_files)
-    rng.shuffle(edge_files)
-    
-    # Distribute proportionally
-    n_k_train = int(len(kodak_files) * train_ratio)
-    n_k_val = int(len(kodak_files) * val_ratio)
-    
-    n_e_train = int(len(edge_files) * train_ratio)
-    n_e_val = int(len(edge_files) * val_ratio)
-    
-    train_paths = kodak_files[:n_k_train] + edge_files[:n_e_train]
-    val_paths = kodak_files[n_k_train:n_k_train + n_k_val] + edge_files[n_e_train:n_e_train + n_e_val]
-    test_paths = kodak_files[n_k_train + n_k_val:] + edge_files[n_e_train + n_e_val:]
-    
+    # Group images by category prefix (e.g. 'caltech_accordion', 'kodak', 'stress')
+    category_groups: Dict[str, List[str]] = {}
+    for p in image_paths:
+        fname = os.path.splitext(os.path.basename(p))[0]
+        parts = fname.split("_")
+        if len(parts) >= 2:
+            cat = "_".join(parts[:-1])
+        else:
+            cat = "general"
+        if cat not in category_groups:
+            category_groups[cat] = []
+        category_groups[cat].append(p)
+        
+    train_paths, val_paths, test_paths = [], [], []
+    for cat in sorted(category_groups.keys()):
+        files = category_groups[cat].copy()
+        rng.shuffle(files)
+        n_tot = len(files)
+        n_train = max(1, int(round(n_tot * train_ratio))) if n_tot >= 3 else n_tot
+        n_val = max(1, int(round(n_tot * val_ratio))) if n_tot >= 3 else 0
+        
+        # Adjust if sum exceeds total
+        if n_train + n_val > n_tot:
+            n_train = max(1, n_tot - 2)
+            n_val = 1
+        
+        cat_train = files[:n_train]
+        cat_val = files[n_train:n_train + n_val]
+        cat_test = files[n_train + n_val:]
+        
+        train_paths.extend(cat_train)
+        val_paths.extend(cat_val)
+        test_paths.extend(cat_test)
+        
     records = []
     for p in train_paths:
         records.append({"image_id": os.path.splitext(os.path.basename(p))[0], "file_path": p, "split": "train"})

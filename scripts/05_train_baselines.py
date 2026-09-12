@@ -33,10 +33,14 @@ def main(config_path: str = "configs/config.yaml"):
     figures_dir = config["paths"]["figures_dir"]
     os.makedirs(os.path.join(results_dir, "baseline"), exist_ok=True)
     
-    feats_df = pd.read_csv(os.path.join(metadata_dir, "features.csv"))
     labels_df = pd.read_csv(os.path.join(metadata_dir, "labels.csv"))
+    feats_path = os.path.join(metadata_dir, "image_features.csv")
+    if not os.path.exists(feats_path):
+        feats_path = os.path.join(metadata_dir, "features.csv")
+    feats_df = pd.read_csv(feats_path)
     
-    merged = pd.merge(feats_df, labels_df[["image_id", "label", "is_lossy_binary"]], on="image_id")
+    # Left merge on labels_df preserves deterministic splits order
+    merged = pd.merge(labels_df[["image_id", "split", "label", "is_lossy_binary"]], feats_df, on="image_id")
     
     # Audit for target leakage: select only pre-compression feature columns
     feature_cols = [c for c in feats_df.columns if c not in TARGET_BLACKLIST]
@@ -56,6 +60,7 @@ def main(config_path: str = "configs/config.yaml"):
     
     X_test = merged.loc[test_mask, feature_cols]
     y_test = merged.loc[test_mask, "is_lossy_binary"].values
+    test_image_ids = merged.loc[test_mask, "image_id"].tolist()
     
     logger.info(f"Split sizes: Train={len(X_train)}, Val={len(X_val)}, Test={len(X_test)}")
     
@@ -66,10 +71,19 @@ def main(config_path: str = "configs/config.yaml"):
     test_predictions = {}
     confusion_matrices = {}
     
+    logger.info(f"{'Model':<22} | {'Split':<6} | {'Accuracy':<8} | {'Precision':<9} | {'Recall':<8} | {'F1-Score':<8} | {'ROC-AUC':<8}")
+    logger.info("-" * 80)
+    
     for name, model in models.items():
+        # Evaluate on Train
+        train_pred = model.predict(X_train)
+        train_prob = model.predict_proba(X_train) if hasattr(model, "predict_proba") else None
+        train_eval = evaluate_classifier(y_train, train_pred, train_prob)
+        
         # Evaluate on Val
         val_pred = model.predict(X_val)
-        val_eval = evaluate_classifier(y_val, val_pred)
+        val_prob = model.predict_proba(X_val) if hasattr(model, "predict_proba") else None
+        val_eval = evaluate_classifier(y_val, val_pred, val_prob)
         
         # Evaluate on Test
         test_pred = model.predict(X_test)
@@ -78,12 +92,20 @@ def main(config_path: str = "configs/config.yaml"):
         test_eval = evaluate_classifier(y_test, test_pred, test_prob)
         
         eval_results[name] = {
+            "train": train_eval,
             "val": val_eval,
             "test": test_eval
         }
         confusion_matrices[name] = test_eval["confusion_matrix"]
         
-        logger.info(f"[{name.upper()}] Test Acc: {test_eval['accuracy']:.3f} | F1: {test_eval['f1_score']:.3f} | Prec: {test_eval['precision']:.3f} | Rec: {test_eval['recall']:.3f}")
+        t_auc_str = f"{train_eval['roc_auc']:.3f}" if train_eval['roc_auc'] is not None else "N/A"
+        v_auc_str = f"{val_eval['roc_auc']:.3f}" if val_eval['roc_auc'] is not None else "N/A"
+        te_auc_str = f"{test_eval['roc_auc']:.3f}" if test_eval['roc_auc'] is not None else "N/A"
+        
+        logger.info(f"{name:<22} | {'Train':<6} | {train_eval['accuracy']:<8.3f} | {train_eval['precision']:<9.3f} | {train_eval['recall']:<8.3f} | {train_eval['f1_score']:<8.3f} | {t_auc_str:<8}")
+        logger.info(f"{'':<22} | {'Val':<6} | {val_eval['accuracy']:<8.3f} | {val_eval['precision']:<9.3f} | {val_eval['recall']:<8.3f} | {val_eval['f1_score']:<8.3f} | {v_auc_str:<8}")
+        logger.info(f"{'':<22} | {'Test':<6} | {test_eval['accuracy']:<8.3f} | {test_eval['precision']:<9.3f} | {test_eval['recall']:<8.3f} | {test_eval['f1_score']:<8.3f} | {te_auc_str:<8}")
+        logger.info("-" * 80)
 
     # Save metrics JSON
     metrics_path = os.path.join(results_dir, "baseline", "model_metrics.json")
@@ -92,8 +114,12 @@ def main(config_path: str = "configs/config.yaml"):
         
     # Save predictions JSON for system evaluation
     preds_path = os.path.join(results_dir, "baseline", "test_predictions.json")
+    preds_payload = {
+        "test_image_ids": test_image_ids,
+        "predictions": test_predictions
+    }
     with open(preds_path, "w") as f:
-        json.dump(test_predictions, f, indent=2)
+        json.dump(preds_payload, f, indent=2)
         
     # Visualizations
     plot_confusion_matrices(confusion_matrices, os.path.join(figures_dir, "confusion_matrices.png"))

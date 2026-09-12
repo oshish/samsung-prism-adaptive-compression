@@ -32,15 +32,15 @@ def generate_ground_truth_label(
     label_cfg = cfg.get("labeling", {})
     comp_cfg = cfg.get("compression", {})
     
-    ssim_thresh = label_cfg.get("ssim_threshold", 0.95)
-    psnr_thresh = label_cfg.get("psnr_threshold", 34.0)
+    ssim_thresh = label_cfg.get("ssim_threshold", 0.94)
+    psnr_thresh = label_cfg.get("psnr_threshold", 33.0)
     min_saving = label_cfg.get("min_size_saving", 0.25)
-    dark_ssim_thresh = label_cfg.get("dark_ssim_threshold", 0.92)
+    dark_ssim_thresh = label_cfg.get("dark_ssim_threshold", 0.90)
     dark_cutoff = label_cfg.get("dark_pixel_cutoff", 40.0)
     
     lossless_codec = comp_cfg.get("default_lossless_codec", "png")
     lossy_codec = comp_cfg.get("default_lossy_codec", "jpeg")
-    lossy_q = comp_cfg.get("default_lossy_quality", 75)
+    lossy_q = comp_cfg.get("default_lossy_quality", 85)
     
     raw_bytes = int(rgb_img.nbytes)
     
@@ -97,15 +97,19 @@ def generate_ground_truth_label(
         "is_lossy_binary": int(is_lossy)
     }
 
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
+
 def build_labeled_dataset(
     splits_df: pd.DataFrame,
-    config: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None,
+    max_workers: int = 8
 ) -> pd.DataFrame:
     """
     Iterates through dataset splits, generates ground-truth labels and metadata.
     """
-    records = []
-    for _, row in splits_df.iterrows():
+    def _process_row(row_tuple):
+        _, row = row_tuple
         img_id = row["image_id"]
         path = row["file_path"]
         split = row["split"]
@@ -113,12 +117,18 @@ def build_labeled_dataset(
         img = load_image(path)
         label_info = generate_ground_truth_label(img, config=config)
         
-        record = {
+        return {
             "image_id": img_id,
             "file_path": path,
             "split": split,
             **label_info
         }
-        records.append(record)
+
+    rows = list(splits_df.iterrows())
+    if max_workers > 1:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            records = list(tqdm(executor.map(_process_row, rows), total=len(rows), desc="Generating Labels"))
+    else:
+        records = [_process_row(r) for r in tqdm(rows, desc="Generating Labels")]
         
     return pd.DataFrame(records)

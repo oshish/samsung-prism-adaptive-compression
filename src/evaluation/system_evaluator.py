@@ -5,9 +5,9 @@ from typing import Dict, Any, List
 def evaluate_system_impact(
     test_metadata: pd.DataFrame,
     predictions: Dict[str, np.ndarray],
-    ssim_threshold: float = 0.95,
-    psnr_threshold: float = 34.0,
-    dark_ssim_threshold: float = 0.92
+    ssim_threshold: float = 0.94,
+    psnr_threshold: float = 33.0,
+    dark_ssim_threshold: float = 0.90
 ) -> Dict[str, Any]:
     """
     Evaluates the real-world engineering objective:

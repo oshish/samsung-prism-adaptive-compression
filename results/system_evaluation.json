@@ -1,10 +1,10 @@
 {
-  "num_test_frames": 8,
-  "total_raw_mb": 9.0,
+  "num_test_frames": 155,
+  "total_raw_mb": 37.94741249084473,
   "strategies": {
     "always_lossless": {
-      "total_mb": 4.5078020095825195,
-      "saving_vs_raw_pct": 49.91331100463867,
+      "total_mb": 16.871734619140625,
+      "saving_vs_raw_pct": 55.53916983612219,
       "saving_vs_lossless_pct": 0.0,
       "mean_ssim": 1.0,
       "mean_psnr": 100.0,
@@ -12,65 +12,65 @@
       "critical_failure_rate": 0.0
     },
     "always_lossy": {
-      "total_mb": 0.8905763626098633,
-      "saving_vs_raw_pct": 90.10470708211264,
-      "saving_vs_lossless_pct": 80.24366729690638,
-      "mean_ssim": 0.9200824645994672,
-      "mean_psnr": 36.02874882079014,
-      "critical_failures": 3,
-      "critical_failure_rate": 0.375
+      "total_mb": 3.504155158996582,
+      "saving_vs_raw_pct": 90.76575995835816,
+      "saving_vs_lossless_pct": 79.23061713511548,
+      "mean_ssim": 0.9914400545016281,
+      "mean_psnr": 42.36511083623387,
+      "critical_failures": 0,
+      "critical_failure_rate": 0.0
     },
     "majority": {
-      "total_mb": 4.5078020095825195,
-      "saving_vs_raw_pct": 49.91331100463867,
-      "saving_vs_lossless_pct": 0.0,
-      "mean_ssim": 1.0,
-      "mean_psnr": 100.0,
+      "total_mb": 3.504155158996582,
+      "saving_vs_raw_pct": 90.76575995835816,
+      "saving_vs_lossless_pct": 79.23061713511548,
+      "mean_ssim": 0.9914400545016281,
+      "mean_psnr": 42.36511083623387,
       "critical_failures": 0,
       "critical_failure_rate": 0.0
     },
     "rule_based": {
-      "total_mb": 3.089475631713867,
-      "saving_vs_raw_pct": 65.67249298095703,
-      "saving_vs_lossless_pct": 31.463812626500154,
-      "mean_ssim": 0.9796213376828464,
-      "mean_psnr": 69.80912910086684,
-      "critical_failures": 1,
-      "critical_failure_rate": 0.125
+      "total_mb": 14.409439086914062,
+      "saving_vs_raw_pct": 62.02787452137741,
+      "saving_vs_lossless_pct": 14.594204969494607,
+      "mean_ssim": 0.9982427497845536,
+      "mean_psnr": 90.2388906182124,
+      "critical_failures": 0,
+      "critical_failure_rate": 0.0
     },
     "logistic_regression": {
-      "total_mb": 1.1924762725830078,
-      "saving_vs_raw_pct": 86.75026363796658,
-      "saving_vs_lossless_pct": 73.54639200993998,
-      "mean_ssim": 0.930148117490524,
-      "mean_psnr": 52.120129260930725,
-      "critical_failures": 2,
-      "critical_failure_rate": 0.25
+      "total_mb": 4.195009231567383,
+      "saving_vs_raw_pct": 88.94520349027887,
+      "saving_vs_lossless_pct": 75.13587472619304,
+      "mean_ssim": 0.9919160423737403,
+      "mean_psnr": 43.849182433022456,
+      "critical_failures": 0,
+      "critical_failure_rate": 0.0
     },
     "decision_tree": {
-      "total_mb": 1.1924762725830078,
-      "saving_vs_raw_pct": 86.75026363796658,
-      "saving_vs_lossless_pct": 73.54639200993998,
-      "mean_ssim": 0.930148117490524,
-      "mean_psnr": 52.120129260930725,
-      "critical_failures": 2,
-      "critical_failure_rate": 0.25
+      "total_mb": 3.4643001556396484,
+      "saving_vs_raw_pct": 90.87078689100224,
+      "saving_vs_lossless_pct": 79.4668406429919,
+      "mean_ssim": 0.9915126255668602,
+      "mean_psnr": 43.051860075926626,
+      "critical_failures": 0,
+      "critical_failure_rate": 0.0
     },
     "random_forest": {
-      "total_mb": 2.383957862854004,
-      "saving_vs_raw_pct": 73.51157930162218,
-      "saving_vs_lossless_pct": 47.11484981402746,
-      "mean_ssim": 0.9787567282497038,
-      "mean_psnr": 68.79481393663795,
+      "total_mb": 3.494840621948242,
+      "saving_vs_raw_pct": 90.7903058665952,
+      "saving_vs_lossless_pct": 79.28582507465818,
+      "mean_ssim": 0.9914402227119409,
+      "mean_psnr": 42.67702936017069,
       "critical_failures": 0,
       "critical_failure_rate": 0.0
     },
     "oracle_ground_truth": {
-      "total_mb": 2.383957862854004,
-      "saving_vs_raw_pct": 73.51157930162218,
-      "saving_vs_lossless_pct": 47.11484981402746,
-      "mean_ssim": 0.9787567282497038,
-      "mean_psnr": 68.79481393663795,
+      "total_mb": 3.4643001556396484,
+      "saving_vs_raw_pct": 90.87078689100224,
+      "saving_vs_lossless_pct": 79.4668406429919,
+      "mean_ssim": 0.9915126255668602,
+      "mean_psnr": 43.051860075926626,
       "critical_failures": 0,
       "critical_failure_rate": 0.0
     }

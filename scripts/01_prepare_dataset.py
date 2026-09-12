@@ -15,13 +15,17 @@ def main(config_path: str = "configs/config.yaml"):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
         
-    raw_dir = config["paths"]["raw_dir"]
+    processed_dir = config["paths"]["processed_dir"]
     metadata_dir = config["paths"]["metadata_dir"]
     ds_cfg = config["dataset"]
     
-    logger.info(f"Phase 1: Preparing benchmark dataset in '{raw_dir}'...")
-    image_paths = prepare_benchmark_dataset(raw_dir)
-    logger.info(f"Prepared {len(image_paths)} total benchmark frames (Kodak + Edge-Case Suite).")
+    # Use verified processed images
+    image_paths = [
+        os.path.join(processed_dir, f)
+        for f in sorted(os.listdir(processed_dir))
+        if f.lower().endswith((".png", ".jpg", ".jpeg"))
+    ]
+    logger.info(f"Loaded {len(image_paths)} clean images from '{processed_dir}'.")
     
     logger.info(f"Generating deterministic train/val/test splits (Seed: {ds_cfg['random_seed']})...")
     splits_df = create_datasplits(

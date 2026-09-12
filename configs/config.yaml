@@ -14,10 +14,10 @@ paths:
   experiments_dir: "experiments"
 
 dataset:
-  name: "kodak_and_edge_cases"
-  train_ratio: 0.60
-  val_ratio: 0.20
-  test_ratio: 0.20
+  name: "full_benchmark_1030"
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
   random_seed: 42
 
 preprocessing:
@@ -32,7 +32,6 @@ compression:
     - "webp_lossless"
   lossy_codecs:
     - "jpeg"
-    - "webp_lossy"
   lossy_quality_levels:
     - 50
     - 75
